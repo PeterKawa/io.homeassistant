@@ -30,20 +30,20 @@ class CompoundDevice extends Homey.Device {
         this._client.registerDevice(this.entityId, this);
 
         if(this.hasCapability("button")) {
-            this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton.bind(value, opts)});
+            this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton(value, opts)});
         }
 
         if(this.hasCapability("onoff")) {
-            this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff.bind(value, opts)});
+            this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts)});
         }
 
         if(this.hasCapability("locked")) {
-            this.registerCapabilityListener('locked', async (value, opts) => {this.onCapabilityLocked.bind(value, opts)});
+            this.registerCapabilityListener('locked', async (value, opts) => {this.onCapabilityLocked(value, opts)});
         }
 
         if(this.hasCapability("dim")) {
             console.log("attach dim listener");
-            this.registerCapabilityListener('dim', async (value, opts) => {this.onCapabilityDim.bind(value, opts)});
+            this.registerCapabilityListener('dim', async (value, opts) => {this.onCapabilityDim(value, opts)});
         }
     }
 
