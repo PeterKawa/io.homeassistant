@@ -1,17 +1,12 @@
 'use strict';
 
-const Homey = require('homey');
+const BaseDriver = require('../basedriver');
 
-class ScriptDriver extends Homey.Driver {
+class ScriptDriver extends BaseDriver {
 
-    onPairListDevices(data, callback) {
-
-        let client = Homey.app.getClient();
-        let scripts = client.getScripts();
-
-        callback(null, scripts);
+    async getDevices(client){
+        return client.getScripts();
     }
-
 }
 
 module.exports = ScriptDriver;

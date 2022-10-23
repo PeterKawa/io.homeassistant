@@ -72,6 +72,9 @@
                 Homey.set('token', tokenElement.value, function( err ){
                     if( err ) return Homey.alert( err );
                 });
+                Homey.set('login', true, function( err ){
+                    //if( err ) return Homey.alert( err );
+                });
 
             });
 

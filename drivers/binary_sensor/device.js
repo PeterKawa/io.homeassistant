@@ -5,7 +5,7 @@ const Homey = require('homey');
 class BinarySensorDevice extends Homey.Device {
 
     onInit() {
-        this._client = Homey.app.getClient();
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
         this.capabilities = this.getCapabilities();
@@ -22,7 +22,7 @@ class BinarySensorDevice extends Homey.Device {
             this.onEntityUpdate(entity);
         }
 
-        this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this))
+        this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts);})
     }
 
     onAdded() {
@@ -46,10 +46,8 @@ class BinarySensorDevice extends Homey.Device {
         }
     }
 
-    onCapabilityOnoff( value, opts, callback ) {
+    onCapabilityOnoff( value, opts ) {
         let oldValue = this.getCapabilityValue('onoff');
-
-        callback(null, true);
         this.setCapabilityValue("onoff", oldValue);
     }
 }

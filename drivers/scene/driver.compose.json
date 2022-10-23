@@ -1,0 +1,17 @@
+{
+    "id": "scene",
+    "name": {
+      "en": "Scene",
+      "de": "Szene",
+      "nl": "Scene"
+    },
+    "class": "button",
+    "capabilities": [
+      "button"
+    ],
+    "images": {
+      "large": "/drivers/scene/assets/images/large.png",
+      "small": "/drivers/scene/assets/images/small.png"
+  },
+  "$extends": [ "pair", "repair" ]
+}

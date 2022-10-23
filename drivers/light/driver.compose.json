@@ -1,0 +1,43 @@
+{
+    "id": "light",
+    "name": {
+      "en": "Light",
+      "de": "Licht",
+      "nl": "Lamp"
+    },
+    "class": "light",
+    "capabilities": [
+      "onoff",
+      "dim",
+      "light_hue",
+      "light_saturation",
+      "light_temperature"
+    ],
+    "capabilitiesOptions": {
+      "dim": {
+        "opts": {
+          "duration": true
+        }
+      },
+      "light_hue": {
+        "opts": {
+          "duration": true
+        }
+      },
+      "light_saturation": {
+        "opts": {
+          "duration": true
+        }
+      },
+      "light_temperature": {
+        "opts": {
+          "duration": true
+        }
+      }
+    },
+    "images": {
+      "large": "/drivers/light/assets/images/large.png",
+      "small": "/drivers/light/assets/images/small.png"
+  },
+  "$extends": [ "pair", "repair" ]
+  }

@@ -1,0 +1,17 @@
+{
+    "id": "script",
+    "name": {
+      "en": "Script",
+      "de": "Skript",
+      "nl": "Script"
+    },
+    "class": "button",
+    "capabilities": [
+      "button"
+    ],
+    "images": {
+      "large": "/drivers/script/assets/images/large.png",
+      "small": "/drivers/script/assets/images/small.png"
+    },
+    "$extends": [ "pair", "repair" ]
+  }

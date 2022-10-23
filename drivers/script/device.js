@@ -5,7 +5,7 @@ const Homey = require('homey');
 class ScriptDevice extends Homey.Device {
 
     onInit() {
-        this._client = Homey.app.getClient();
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
 
@@ -21,7 +21,7 @@ class ScriptDevice extends Homey.Device {
             this.onEntityUpdate(entity);
         }
 
-        this.registerCapabilityListener('button', this.onCapabilityButton.bind(this))
+        this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton(value, opts);})
     }
 
     onAdded() {
@@ -33,9 +33,8 @@ class ScriptDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onCapabilityButton( value, opts, callback ) {
+    onCapabilityButton( value, opts ) {
         this._client.turnOnOff(this.entityId, true);
-        callback( null );
     }
 
     onEntityUpdate(data) {

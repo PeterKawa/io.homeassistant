@@ -5,7 +5,7 @@ const Homey = require('homey');
 class SensorDevice extends Homey.Device {
 
     onInit() {
-        this._client = Homey.app.getClient();
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
         this.capability = this.getCapabilities()[0];

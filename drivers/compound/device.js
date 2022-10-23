@@ -15,7 +15,7 @@ const defaultBooleanConverter = {
 class CompoundDevice extends Homey.Device {
 
     onInit() {
-        this._client = Homey.app.getClient();
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
         this.capabilities = this.getCapabilities();
@@ -30,20 +30,20 @@ class CompoundDevice extends Homey.Device {
         this._client.registerDevice(this.entityId, this);
 
         if(this.hasCapability("button")) {
-            this.registerCapabilityListener('button', this.onCapabilityButton.bind(this))
+            this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton.bind(value, opts)});
         }
 
         if(this.hasCapability("onoff")) {
-            this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this))
+            this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff.bind(value, opts)});
         }
 
         if(this.hasCapability("locked")) {
-            this.registerCapabilityListener('locked', this.onCapabilityLocked.bind(this))
+            this.registerCapabilityListener('locked', async (value, opts) => {this.onCapabilityLocked.bind(value, opts)});
         }
 
         if(this.hasCapability("dim")) {
             console.log("attach dim listener");
-            this.registerCapabilityListener('dim', this.onCapabilityDim.bind(this))
+            this.registerCapabilityListener('dim', async (value, opts) => {this.onCapabilityDim.bind(value, opts)});
         }
     }
 
@@ -113,24 +113,21 @@ class CompoundDevice extends Homey.Device {
         });
     }
 
-    onCapabilityButton( value, opts, callback ) {
+    onCapabilityButton( value, opts ) {
         this._client.turnOnOff(this.compoundCapabilities["button"], true);
-        callback( null );
     }
 
 
-    onCapabilityOnoff( value, opts, callback ) {
+    onCapabilityOnoff( value, opts ) {
         this._client.turnOnOff(this.compoundCapabilities["onoff"], value);
-        callback( null );
     }
 
-    onCapabilityLocked( value, opts, callback ) {
+    onCapabilityLocked( value, opts ) {
         console.log("onCapabilityLocked", value);
         this._client.turnOnOff(this.compoundCapabilities["locked"], value);
-        callback( null );
     }
 
-    onCapabilityDim( value, opts, callback ) {
+    onCapabilityDim( value, opts ) {
         let entityId = this.compoundCapabilities["dim"];
         let outputValue = this.outputConverter("dim")(value);
 
@@ -140,7 +137,6 @@ class CompoundDevice extends Homey.Device {
             "entity_id": entityId,
             "value": outputValue
         });
-        callback( null );
     }
 }
 

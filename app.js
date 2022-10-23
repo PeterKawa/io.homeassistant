@@ -1,3 +1,8 @@
+if (process.env.DEBUG === '1')
+{
+    require('inspector').open(9225, '0.0.0.0', true);
+}
+
 'use strict';
 
 const Homey = require('homey');
@@ -10,34 +15,53 @@ class App extends Homey.App {
 
 		this.log('Home-Assistant is running...');
 
-		let address = Homey.ManagerSettings.get("address");
-		let token = Homey.ManagerSettings.get("token");
+		// Init client and connect
+		let address = this.homey.settings.get("address");
+		let token = this.homey.settings.get("token");
 
 		this._client = new Client(address, token)
-			.on("connection_update", (state) => {
-				Homey.ManagerApi.realtime('connection_update', state);
+		this._client.on("connection_update", (state) => {
+				this.homey.api.realtime('connection_update', state);
 			});
+		this._client.connect(address, token, false).catch((error) => {this.error("Connect error: "+ error);} );
 
-		this._onFlowActionCallService = this._onFlowActionCallService.bind(this);
+		// Register Flowcards
+		this._flowActionCallService = this.homey.flow.getActionCard('callService')
+		this._flowActionCallService.registerRunListener(async (args, state) => {
+			try{
+				this._onFlowActionCallService;
+			}
+			catch(error){
+				this.error("Error executing flowAction 'callService': "+  error.message);
+				throw error;
+			}
+		});
 
-		new Homey.FlowCardAction('callService')
-			.register()
-			.registerRunListener( this._onFlowActionCallService );
-
-		Homey.ManagerSettings.on("set", this._reconnectClient.bind(this));
+		// App events
+		this.homey.settings.on("set", async (key) =>  {
+			if (key = "login" && this.homey.settings.get("login") == true){
+				await this.homey.settings.set("login", false);
+				await this._reconnectClient();
+			}
+		});
 	}
 
 	getClient() {
 		return this._client;
 	}
 
-	_reconnectClient(arg) {
+	async _reconnectClient() {
 		console.log("settings updated.... reconnecting");
 
-		let address = Homey.ManagerSettings.get("address");
-		let token = Homey.ManagerSettings.get("token");
+		let address = this.homey.settings.get("address");
+		let token = this.homey.settings.get("token");
 
-		this._client.connect(address, token, true);
+		try{
+			await this._client.connect(address, token, true);
+		}
+		catch(error){
+			this.error("Connect error: "+ error.message);
+		}
 	}
 
 	_onFlowActionCallService(args) {

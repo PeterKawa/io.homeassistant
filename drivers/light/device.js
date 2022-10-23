@@ -7,7 +7,7 @@ const CAPABILITIES_SET_DEBOUNCE = 100;
 class LightDevice extends Homey.Device {
 
     onInit() {
-        this._client = Homey.app.getClient();
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
 
@@ -26,7 +26,7 @@ class LightDevice extends Homey.Device {
             this.onEntityUpdate(entity);
         }
 
-        this.registerMultipleCapabilityListener(this.getCapabilities(), this._onCapabilitiesSet.bind(this), CAPABILITIES_SET_DEBOUNCE);
+        this.registerMultipleCapabilityListener(this.getCapabilities(), async (value, opts) => {this._onCapabilitiesSet(value, opts)}, CAPABILITIES_SET_DEBOUNCE);
     }
 
     onAdded() {
@@ -38,9 +38,8 @@ class LightDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onCapabilityOnoff( value, opts, callback ) {
+    onCapabilityOnoff( value, opts ) {
         this._client.turnOnOff(this.entityId, value);
-        callback( null );
     }
 
     getCapabilityUpdate(valueObj, capability) {
@@ -55,7 +54,7 @@ class LightDevice extends Homey.Device {
         return(typeof value !== 'undefined');
     }
 
-    _onCapabilitiesSet(valueObj, optsObj, callback) {
+    _onCapabilitiesSet(valueObj, optsObj) {
         if( typeof valueObj.dim === 'number' ) {
 			valueObj.onoff = valueObj.dim > 0;	
 		}
@@ -73,7 +72,10 @@ class LightDevice extends Homey.Device {
                 if(bri != this.getCapabilityValue("dim")) {
                     data["brightness"] = bri * 250.0;
 
-                    this.setCapabilityValue("dim", bri);
+                    this.setCapabilityValue("dim", bri)
+                        .catch(error => {
+                            this.error("Device "+this.getName()+": Error set dim capability, value: "+bri+" Error: "+error.message);
+                        });
                 }
             }
 
@@ -95,9 +97,15 @@ class LightDevice extends Homey.Device {
                         sat * 100.0
                     ]
 
-                    this.setCapabilityValue("light_hue", hue);
-                    this.setCapabilityValue("light_saturation", sat);
-                }
+                    this.setCapabilityValue("light_hue", hue)
+                        .catch(error => {
+                            this.error("Device "+this.getName()+": Error set hue capability, value: "+hue+" Error: "+error.message);
+                        });
+                    this.setCapabilityValue("light_saturation", sat)
+                        .catch(error => {
+                            this.error("Device "+this.getName()+": Error set saturation capability, value: "+sat+" Error: "+error.message);
+                        });
+            }
     
             } else if(this.hasCapabilityUpdate(valueObj, "light_temperature")) {
                 lightModeUpdate = "temperature";
@@ -107,18 +115,23 @@ class LightDevice extends Homey.Device {
                 if(tmp != this.getCapabilityValue("light_temperature")) {
                     data["color_temp"] = ((this._maxMireds - this._minMireds) * tmp) + this._minMireds;
 
-                    this.setCapabilityValue("light_temperature", tmp);
-                }
+                    this.setCapabilityValue("light_temperature", tmp)
+                        .catch(error => {
+                            this.error("Device "+this.getName()+": Error set temoerature capability, value: "+tmp+" Error: "+error.message);
+                        });
+            }
             }
 
             if(lightModeUpdate && this.hasCapability("light_mode")) {
-                this.setCapabilityValue("light_mode", lightModeUpdate);
-            }
+                this.setCapabilityValue("light_mode", lightModeUpdate)
+                    .catch(error => {
+                        this.error("Device "+this.getName()+": Error set light mode capability, value: "+lightModeUpdate+" Error: "+error.message);
+                    });
+    }
         }
 
         this._client.updateLight(lightOn, data);
 
-        callback(null);
     }
 
     onEntityUpdate(data) {
@@ -136,7 +149,10 @@ class LightDevice extends Homey.Device {
                 if(this.hasCapability("dim")) {
                     let brightness = data.attributes["brightness"]; // 0..255 -> 0..1
                     if(brightness != 0) {
-                        this.setCapabilityValue("dim", 1.0 / 250 * brightness);
+                        this.setCapabilityValue("dim", 1.0 / 255 * brightness)
+                        .catch(error => {
+                            this.error("Device "+this.getName()+": Error set dim capability, brightness value: "+brightness+" Error: "+error.message);
+                        });
                     }
                 }
 
@@ -149,8 +165,14 @@ class LightDevice extends Homey.Device {
                         let hue = 1.0 / 360.0 * hs[0]; // 0..360 -> 0..1
                         let sat = 1.0 / 100.0 * hs[1]; // 0..100 -> 0..1
     
-                        this.setCapabilityValue("light_hue", hue);
-                        this.setCapabilityValue("light_saturation", sat);
+                        this.setCapabilityValue("light_hue", hue)
+                            .catch(error => {
+                                this.error("Device "+this.getName()+": Error set hue capability, value: "+hue+" Error: "+error.message);
+                            });
+                        this.setCapabilityValue("light_saturation", sat)
+                            .catch(error => {
+                                this.error("Device "+this.getName()+": Error set light_saturation capability, value: "+sat+" Error: "+error.message);
+                            });
                     }
                 }
     
@@ -158,15 +180,21 @@ class LightDevice extends Homey.Device {
                     let temperature = data.attributes["color_temp"];
                     if(temperature) {
                         let temp = 1.0 / (this._maxMireds - this._minMireds) * (temperature - this._minMireds);
-                        this.setCapabilityValue("light_temperature", temp);
-                    }
+                        this.setCapabilityValue("light_temperature", temp)
+                            .catch(error => {
+                                this.error("Device "+this.getName()+": Error set light_temperature capability, value: "+temp+" Error: "+error.message);
+                            });
+                }
                 }
     
                 if(hasLightMode) {
                     let light_mode = hs ? "color" : "temperature";
                     
-                    this.setCapabilityValue("light_mode", hs ? "color" : "temperature");
-                }
+                    this.setCapabilityValue("light_mode", hs ? "color" : "temperature")
+                        .catch(error => {
+                            this.error("Device "+this.getName()+": Error set light_mode capability, value: "+hs+" Error: "+error.message);
+                        });
+        }
             }
         }
     }

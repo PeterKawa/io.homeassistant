@@ -5,7 +5,7 @@ const Homey = require('homey');
 class SwitchDevice extends Homey.Device {
 
     onInit() {
-        this._client = Homey.app.getClient();
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
 
@@ -21,7 +21,7 @@ class SwitchDevice extends Homey.Device {
             this.onEntityUpdate(entity);
         }
 
-        this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this))
+        this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts);})
     }
 
     onAdded() {
@@ -33,9 +33,8 @@ class SwitchDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onCapabilityOnoff( value, opts, callback ) {
+    onCapabilityOnoff( value, opts ) {
         this._client.turnOnOff(this.entityId, value);
-        callback( null );
     }
 
     onEntityUpdate(data) {

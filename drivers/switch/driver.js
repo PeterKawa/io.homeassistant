@@ -1,17 +1,12 @@
 'use strict';
 
-const Homey = require('homey');
+const BaseDriver = require('../basedriver');
 
-class SwitchDriver extends Homey.Driver {
+class SwitchDriver extends BaseDriver {
 
-    onPairListDevices(data, callback) {
-
-        let client = Homey.app.getClient();
-        let switches = client.getSwitches();
-
-        callback(null, switches);
+    async getDevices(client){
+        return client.getSwitches();
     }
-
 }
 
 module.exports = SwitchDriver;
