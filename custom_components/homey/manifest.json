@@ -1,7 +1,8 @@
 {
     "domain": "homey",
     "name": "homey",
-    "documentation": "https://github.com/rogro82/io.homeassistant",
+	"version": "1.0.0",	
+    "documentation": "https://github.com/RonnyWinkler/io.homeassistant",
     "requirements": [],
     "dependencies": [],
     "codeowners": [
