@@ -4,7 +4,9 @@ const Homey = require('homey');
 
 class SceneDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
+        await this.updateCapabilities();
+
         this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
@@ -22,6 +24,16 @@ class SceneDevice extends Homey.Device {
         }
 
         this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton(value, opts);})
+        // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+    }
+
+    async updateCapabilities(){
+        // Add new capabilities (if not already added)
+        if (!this.hasCapability('button.reconnect'))
+        {
+          await this.addCapability('button.reconnect');
+        }
     }
 
     onAdded() {
@@ -39,6 +51,10 @@ class SceneDevice extends Homey.Device {
 
     onEntityUpdate(data) {
         // nothing to update
+    }
+    
+    async clientReconnect(){
+        await this.homey.app.clientReconnect();
     }
 }
 

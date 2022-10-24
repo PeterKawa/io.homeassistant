@@ -14,8 +14,10 @@ const defaultBooleanConverter = {
 
 class CompoundDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
         this._client = this.homey.app.getClient();
+
+        await this.updateCapabilities();
 
         this.entityId = this.getData().id;
         this.capabilities = this.getCapabilities();
@@ -44,6 +46,19 @@ class CompoundDevice extends Homey.Device {
         if(this.hasCapability("dim")) {
             console.log("attach dim listener");
             this.registerCapabilityListener('dim', async (value, opts) => {this.onCapabilityDim(value, opts)});
+                // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+        }
+
+        // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+    }
+
+    async updateCapabilities(){
+        // Add new capabilities (if not already added)
+        if (!this.hasCapability('button.reconnect'))
+        {
+          await this.addCapability('button.reconnect');
         }
     }
 
@@ -137,6 +152,10 @@ class CompoundDevice extends Homey.Device {
             "entity_id": entityId,
             "value": outputValue
         });
+    }
+
+    async clientReconnect(){
+        await this.homey.app.clientReconnect();
     }
 }
 

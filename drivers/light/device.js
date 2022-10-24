@@ -6,7 +6,9 @@ const CAPABILITIES_SET_DEBOUNCE = 100;
 
 class LightDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
+        await this.updateCapabilities();
+
         this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
@@ -27,6 +29,16 @@ class LightDevice extends Homey.Device {
         }
 
         this.registerMultipleCapabilityListener(this.getCapabilities(), async (value, opts) => {this._onCapabilitiesSet(value, opts)}, CAPABILITIES_SET_DEBOUNCE);
+        // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+    }
+
+    async updateCapabilities(){
+        // Add new capabilities (if not already added)
+        if (!this.hasCapability('button.reconnect'))
+        {
+          await this.addCapability('button.reconnect');
+        }
     }
 
     onAdded() {
@@ -194,9 +206,13 @@ class LightDevice extends Homey.Device {
                         .catch(error => {
                             this.error("Device "+this.getName()+": Error set light_mode capability, value: "+hs+" Error: "+error.message);
                         });
-        }
+                }
             }
         }
+    }
+
+    async clientReconnect(){
+        await this.homey.app.clientReconnect();
     }
 }
 

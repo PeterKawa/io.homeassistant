@@ -4,7 +4,9 @@ const Homey = require('homey');
 
 class SensorDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
+        await this.updateCapabilities();
+
         this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
@@ -20,6 +22,16 @@ class SensorDevice extends Homey.Device {
         let entity = this._client.getEntity(this.entityId);
         if(entity) { 
             this.onEntityUpdate(entity);
+        }
+        // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+    }
+
+    async updateCapabilities(){
+        // Add new capabilities (if not already added)
+        if (!this.hasCapability('button.reconnect'))
+        {
+          await this.addCapability('button.reconnect');
         }
     }
 
@@ -45,6 +57,10 @@ class SensorDevice extends Homey.Device {
         } catch(ex) {
             this.log("error", ex);
         }
+    }
+
+    async clientReconnect(){
+        await this.homey.app.clientReconnect();
     }
 }
 

@@ -4,7 +4,9 @@ const Homey = require('homey');
 
 class BinarySensorDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
+        await this.updateCapabilities();
+
         this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
@@ -23,6 +25,16 @@ class BinarySensorDevice extends Homey.Device {
         }
 
         this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts);})
+        // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+    }
+
+    async updateCapabilities(){
+        // Add new capabilities (if not already added)
+        if (!this.hasCapability('button.reconnect'))
+        {
+          await this.addCapability('button.reconnect');
+        }
     }
 
     onAdded() {
@@ -49,6 +61,10 @@ class BinarySensorDevice extends Homey.Device {
     onCapabilityOnoff( value, opts ) {
         let oldValue = this.getCapabilityValue('onoff');
         this.setCapabilityValue("onoff", oldValue);
+    }
+
+    async clientReconnect(){
+        await this.homey.app.clientReconnect();
     }
 }
 

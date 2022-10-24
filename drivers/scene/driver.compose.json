@@ -7,11 +7,13 @@
     },
     "class": "button",
     "capabilities": [
-      "button"
+      "button",
+    
+      "button.reconnect"
     ],
     "images": {
       "large": "/drivers/scene/assets/images/large.png",
       "small": "/drivers/scene/assets/images/small.png"
   },
-  "$extends": [ "pair", "repair" ]
+  "$extends": [ "capabilitiesOptions", "pair", "repair" ]
 }

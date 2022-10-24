@@ -82,6 +82,21 @@
   },
   "drivers": [
     {
+      "capabilitiesOptions": {
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -175,7 +190,8 @@
         "alarm_pm25",
         "alarm_smoke",
         "alarm_tamper",
-        "alarm_water"
+        "alarm_water",
+        "button.reconnect"
       ],
       "energy": {
         "batteries": [
@@ -188,6 +204,21 @@
       }
     },
     {
+      "capabilitiesOptions": {
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -303,7 +334,8 @@
         "measure_voltage",
         "measure_water",
         "measure_wind_angle",
-        "measure_wind_strength"
+        "measure_wind_strength",
+        "button.reconnect"
       ],
       "energy": {
         "batteries": [
@@ -316,6 +348,28 @@
       }
     },
     {
+      "capabilitiesOptions": {
+        "dim": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "light_hue": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "light_saturation": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "light_temperature": {
+          "opts": {
+            "duration": true
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -401,36 +455,30 @@
         "dim",
         "light_hue",
         "light_saturation",
-        "light_temperature"
+        "light_temperature",
+        "button.reconnect"
       ],
-      "capabilitiesOptions": {
-        "dim": {
-          "opts": {
-            "duration": true
-          }
-        },
-        "light_hue": {
-          "opts": {
-            "duration": true
-          }
-        },
-        "light_saturation": {
-          "opts": {
-            "duration": true
-          }
-        },
-        "light_temperature": {
-          "opts": {
-            "duration": true
-          }
-        }
-      },
       "images": {
         "large": "/drivers/light/assets/images/large.png",
         "small": "/drivers/light/assets/images/small.png"
       }
     },
     {
+      "capabilitiesOptions": {
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -512,7 +560,8 @@
       },
       "class": "button",
       "capabilities": [
-        "button"
+        "button",
+        "button.reconnect"
       ],
       "images": {
         "large": "/drivers/scene/assets/images/large.png",
@@ -520,6 +569,21 @@
       }
     },
     {
+      "capabilitiesOptions": {
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -601,7 +665,8 @@
       },
       "class": "button",
       "capabilities": [
-        "button"
+        "button",
+        "button.reconnect"
       ],
       "images": {
         "large": "/drivers/script/assets/images/large.png",
@@ -609,6 +674,21 @@
       }
     },
     {
+      "capabilitiesOptions": {
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -710,7 +790,8 @@
         "measure_voltage",
         "measure_water",
         "measure_wind_angle",
-        "measure_wind_strength"
+        "measure_wind_strength",
+        "button.reconnect"
       ],
       "energy": {
         "batteries": [
@@ -723,6 +804,21 @@
       }
     },
     {
+      "capabilitiesOptions": {
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "pair": [
         {
           "id": "loading",
@@ -804,7 +900,8 @@
       },
       "class": "socket",
       "capabilities": [
-        "onoff"
+        "onoff",
+        "button.reconnect"
       ],
       "images": {
         "large": "/drivers/switch/assets/images/large.png",

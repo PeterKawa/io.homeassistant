@@ -27,7 +27,9 @@
     "measure_voltage",
     "measure_water",
     "measure_wind_angle",
-    "measure_wind_strength"
+    "measure_wind_strength",
+    
+    "button.reconnect"
   ],
   "energy": {
     "batteries": ["OTHER"]
@@ -36,5 +38,5 @@
     "large": "/drivers/sensor/assets/images/large.png",
     "small": "/drivers/sensor/assets/images/small.png"
   },
-  "$extends": [ "pair", "repair" ]
+  "$extends": [ "capabilitiesOptions", "pair", "repair" ]
 }

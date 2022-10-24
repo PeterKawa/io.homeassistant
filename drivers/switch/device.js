@@ -4,7 +4,9 @@ const Homey = require('homey');
 
 class SwitchDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
+        await this.updateCapabilities();
+
         this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
@@ -22,6 +24,16 @@ class SwitchDevice extends Homey.Device {
         }
 
         this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts);})
+        // maintenance actions
+        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+    }
+
+    async updateCapabilities(){
+        // Add new capabilities (if not already added)
+        if (!this.hasCapability('button.reconnect'))
+        {
+          await this.addCapability('button.reconnect');
+        }
     }
 
     onAdded() {
@@ -41,6 +53,10 @@ class SwitchDevice extends Homey.Device {
         if(data) {
             this.setCapabilityValue("onoff", data.state == "on");
         }
+    }
+
+    async clientReconnect(){
+        await this.homey.app.clientReconnect();
     }
 }
 

@@ -7,11 +7,13 @@
     },
     "class": "socket",
     "capabilities": [
-      "onoff"
+      "onoff",
+    
+      "button.reconnect"
     ],
     "images": {
       "large": "/drivers/switch/assets/images/large.png",
       "small": "/drivers/switch/assets/images/small.png"
   },
-  "$extends": [ "pair", "repair" ]
+  "$extends": [ "capabilitiesOptions", "pair", "repair" ]
 }

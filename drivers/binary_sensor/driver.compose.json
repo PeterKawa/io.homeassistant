@@ -19,7 +19,9 @@
         "alarm_pm25",
         "alarm_smoke",
         "alarm_tamper",
-        "alarm_water"
+        "alarm_water",
+        
+        "button.reconnect"
     ],
     "energy": {
         "batteries": ["OTHER"]
@@ -28,5 +30,6 @@
         "large": "/drivers/binary_sensor/assets/images/large.png",
         "small": "/drivers/binary_sensor/assets/images/small.png"
     },
-    "$extends": [ "pair", "repair" ]
+
+    "$extends": [ "capabilitiesOptions", "pair", "repair" ]
 }

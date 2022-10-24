@@ -67,6 +67,10 @@ class App extends Homey.App {
 	_onFlowActionCallService(args) {
 		this._client.callService(args.domain, args.service, args.data);
 	}
+
+	async clientReconnect(){
+		await this._reconnectClient();
+	}
 }
 
 module.exports = App;
