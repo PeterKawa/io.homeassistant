@@ -34,3 +34,12 @@ In addition you can set a title for each capability (optional):
       measure_temperature: "Temperature title"
       measure_temperature.temp1: "Temperature subcapability 1 title"
       measure_temperature.temp2: "Temperature subcapability 2 title"
+
+Use Icons
+=========
+You can set an icon for your compound device:
+livingroom_compound:
+  name: Livingroom environment
+  icon: "measure_temperature"
+
+A list of icons can be found in Icons.txt
