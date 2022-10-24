@@ -28,6 +28,10 @@
     "measure_water",
     "measure_wind_angle",
     "measure_wind_strength",
+    "meter_gas",
+    "meter_water",
+    "meter_power",
+    "meter_rain",
     
     "button.reconnect"
   ],

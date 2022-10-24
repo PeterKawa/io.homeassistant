@@ -44,10 +44,11 @@ class CompoundDevice extends Homey.Device {
         }
 
         if(this.hasCapability("dim")) {
-            console.log("attach dim listener");
             this.registerCapabilityListener('dim', async (value, opts) => {this.onCapabilityDim(value, opts)});
-                // maintenance actions
-        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+        }
+
+        if(this.hasCapability("volume_set")) {
+            this.registerCapabilityListener('volume_set', async (value, opts) => {this.onCapabilityVolumeSet(value, opts)});
         }
 
         // maintenance actions
@@ -75,7 +76,8 @@ class CompoundDevice extends Homey.Device {
         }
 
         if(capability.startsWith("measure_") ||
-            capability == "dim") {
+            capability == "dim" || 
+            capability == "volume_set" ) {
             return defaultValueConverter.from;
         } else {
             return defaultBooleanConverter.from;
@@ -93,8 +95,9 @@ class CompoundDevice extends Homey.Device {
             }
         }
 
-        if(capability.startsWith("measure_" ||
-            capability == "dim")) {
+        if(capability.startsWith("measure_") ||
+            capability == "dim" || 
+            capability == "volume_set" ) {
             return defaultValueConverter.to;
         } else {
             return defaultBooleanConverter.to;
@@ -123,7 +126,7 @@ class CompoundDevice extends Homey.Device {
 
                 let convert = this.inputConverter(key);
 
-                this.setCapabilityValue(key, convert(data.state));
+                this.setCapabilityValue(key, convert(data.attributes.volume_level));
             }
         });
     }
@@ -151,6 +154,18 @@ class CompoundDevice extends Homey.Device {
         this._client.callService("input_number", "set_value", {
             "entity_id": entityId,
             "value": outputValue
+        });
+    }
+
+    onCapabilityVolumeSet( value, opts ) {
+        let entityId = this.compoundCapabilities["volume_set"];
+        let outputValue = this.outputConverter("volume_set")(value);
+
+        // TODO: make service calls configurable to allow other types then just input_number
+        
+        this._client.callService("media_player", "volume_set", {
+            "entity_id": entityId,
+            "volume_level": outputValue
         });
     }
 
