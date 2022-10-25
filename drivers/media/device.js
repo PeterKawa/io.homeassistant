@@ -49,6 +49,21 @@ class MediaDevice extends Homey.Device {
         if(this.hasCapability("volume_mute")) {
             this.registerCapabilityListener('volume_mute', async (value, opts) => {this.onCapabilityVolumeMute(value, opts)});
         }
+        if(this.hasCapability("speaker_playing")) {
+            this.registerCapabilityListener('speaker_playing', async (value, opts) => {this.onCapabilitySpeakerPlaying(value, opts)});
+        }
+        if(this.hasCapability("speaker_next")) {
+            this.registerCapabilityListener('speaker_next', async (value, opts) => {this.onCapabilitySpeakerNext(value, opts)});
+        }
+        if(this.hasCapability("speaker_prev")) {
+            this.registerCapabilityListener('speaker_prev', async (value, opts) => {this.onCapabilitySpeakerPrev(value, opts)});
+        }
+        if(this.hasCapability("speaker_shuffle")) {
+            this.registerCapabilityListener('speaker_shuffle', async (value, opts) => {this.onCapabilitySpeakerShuffle(value, opts)});
+        }
+        if(this.hasCapability("speaker_repeat")) {
+            this.registerCapabilityListener('speaker_repeat', async (value, opts) => {this.onCapabilitySpeakerRepeat(value, opts)});
+        }
 
         // maintenance actions
         this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
@@ -104,6 +119,8 @@ class MediaDevice extends Homey.Device {
 
     onAdded() {
         this.log('device added');
+        let entity = this._client.getEntity(this.entityId);
+        this.onEntityUpdate(entity);
     }
 
     onDeleted() {
@@ -124,6 +141,59 @@ class MediaDevice extends Homey.Device {
             if (this.hasCapability("volume_mute") && data.attributes.is_volume_muted != null){
                     this.setCapabilityValue("volume_mute", data.attributes.is_volume_muted);
             }
+            if (this.hasCapability("speaker_playing") && data.state != null){
+                switch (data.state){
+                    case "playing":
+                        this.setCapabilityValue("speaker_playing", true);
+                        break;
+                    default:
+                        this.setCapabilityValue("speaker_playing", false);
+                }
+            }
+            if (this.hasCapability("speaker_shuffle")){
+                if (data.attributes.shuffle != null){
+                    this.setCapabilityValue("speaker_shuffle", data.attributes.shuffle );
+                }
+                else{
+                    this.setCapabilityValue("speaker_shuffle", false );
+                }
+            }
+            if (this.hasCapability("speaker_repeat")){
+                if (data.attributes.repeat != null){
+                    switch (data.attributes.repeat){
+                        case "off":
+                            this.setCapabilityValue("speaker_repeat", "none");
+                            break;
+                        case "one":
+                            this.setCapabilityValue("speaker_repeat", "track");
+                            break;
+                        case "all":
+                            this.setCapabilityValue("speaker_repeat", "playlist");
+                            break;
+                        default:
+                            this.setCapabilityValue("speaker_repeat", "none");
+                    }
+                }
+                else{
+                    this.setCapabilityValue("speaker_repeat", "none");
+                }
+            }
+            if (this.hasCapability("speaker_artist") && data.attributes.media_artist != null){
+                this.setCapabilityValue("speaker_artist", data.attributes.media_artist);
+            }
+            if (this.hasCapability("speaker_album") && data.attributes.media_album_name != null){
+                this.setCapabilityValue("speaker_album", data.attributes.media_album_name);
+            }
+            if (this.hasCapability("speaker_track") && data.attributes.media_title != null){
+                this.setCapabilityValue("speaker_track", data.attributes.media_title);
+            }
+            if (this.hasCapability("speaker_duration") && data.attributes.media_duration != null){
+                this.setCapabilityValue("speaker_duration", data.attributes.media_duration);
+            }
+            if (this.hasCapability("speaker_position") && data.attributes.media_position != null){
+                this.setCapabilityValue("speaker_position", data.attributes.media_position);
+            }
+
             if (this.hasCapability("onoff") && data.state != null){
                 switch (data.state){
                     case "on":
@@ -150,15 +220,23 @@ class MediaDevice extends Homey.Device {
 
 
     onCapabilityOnoff( value, opts ) {
-        this._client.turnOnOff(this.entityId, value);
+        // this._client.turnOnOff(this.entityId, value);
+        let entityId = this.entityId;
+        if (value == true){
+            this._client.callService("media_player", "turn_on", {
+                "entity_id": entityId
+            });
+        }
+        else{
+            this._client.callService("media_player", "turn_off", {
+                "entity_id": entityId
+            });
+        }
     }
 
     onCapabilityVolumeSet( value, opts ) {
         let entityId = this.entityId;
         let outputValue = this.outputConverter("volume_set")(value);
-
-        // TODO: make service calls configurable to allow other types then just input_number
-        
         this._client.callService("media_player", "volume_set", {
             "entity_id": entityId,
             "volume_level": outputValue
@@ -191,6 +269,66 @@ class MediaDevice extends Homey.Device {
             "is_volume_muted": outputValue
         });
     }
+
+    onCapabilitySpeakerPlaying( value, opts ) {
+        let entityId = this.entityId;
+        let outputValue = value;
+        if (outputValue){
+            this._client.callService("media_player", "media_play", {
+                "entity_id": entityId
+            });
+        }
+        else{
+            this._client.callService("media_player", "media_play_pause", {
+                "entity_id": entityId
+            });
+        }
+    }
+
+    onCapabilitySpeakerNext( value, opts ) {
+        let entityId = this.entityId;
+        this._client.callService("media_player", "media_next_track", {
+            "entity_id": entityId
+        });
+    }
+
+    onCapabilitySpeakerPrev( value, opts ) {
+        let entityId = this.entityId;
+        this._client.callService("media_player", "media_previous_track", {
+            "entity_id": entityId
+        });
+    }
+
+    onCapabilitySpeakerShuffle( value, opts ) {
+        let entityId = this.entityId;
+        let outputValue = value;
+        this._client.callService("media_player", "shuffle_set", {
+            "entity_id": entityId,
+            "shuffle": outputValue
+        });
+    }
+
+    onCapabilitySpeakerRepeat( value, opts ) {
+        let entityId = this.entityId;
+        let outputValue = "off";
+        switch (value){
+            case "none":
+                outputValue = "off";
+                break;
+            case "track":
+                outputValue = "one";
+                break;
+            case "playlist":
+                outputValue = "all";
+                break;
+        }
+        
+        this._client.callService("media_player", "repeat_set", {
+            "entity_id": entityId,
+            "is_volume_muted": outputValue
+        });
+    }
+
 
     async clientReconnect(){
         await this.homey.app.clientReconnect();

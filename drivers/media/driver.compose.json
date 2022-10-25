@@ -17,6 +17,11 @@
     "speaker_prev",
     "speaker_shuffle",
     "speaker_repeat",
+    "speaker_artist",
+    "speaker_album",
+    "speaker_track",
+    "speaker_duration",
+    "speaker_position",
     
     "button.reconnect"
   ],
