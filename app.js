@@ -10,8 +10,8 @@ const Client = require('./lib/Client.js');
 
 class App extends Homey.App {
 	
-	onInit() {
-		super.onInit();
+	async onInit() {
+		await super.onInit();
 
 		this.log('Home-Assistant is running...');
 
@@ -23,7 +23,7 @@ class App extends Homey.App {
 		this._client.on("connection_update", (state) => {
 				this.homey.api.realtime('connection_update', state);
 			});
-		this._client.connect(address, token, false).catch((error) => {this.error("Connect error: "+ error);} );
+		await this._client.connect(address, token, false).catch((error) => {this.error("Connect error: "+ error);} );
 
 		// Register Flowcards
 		this._flowActionCallService = this.homey.flow.getActionCard('callService')

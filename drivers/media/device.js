@@ -181,8 +181,13 @@ class MediaDevice extends Homey.Device {
             if (this.hasCapability("speaker_artist") && data.attributes.media_artist != null){
                 this.setCapabilityValue("speaker_artist", data.attributes.media_artist);
             }
-            if (this.hasCapability("speaker_album") && data.attributes.media_album_name != null){
-                this.setCapabilityValue("speaker_album", data.attributes.media_album_name);
+            if (this.hasCapability("speaker_album")){
+                if (data.attributes.media_album_name != null){
+                    this.setCapabilityValue("speaker_album", data.attributes.media_album_name);
+                }
+                else if (data.attributes.app_name != null){
+                    this.setCapabilityValue("speaker_album", data.attributes.app_name);
+                }
             }
             if (this.hasCapability("speaker_track") && data.attributes.media_title != null){
                 this.setCapabilityValue("speaker_track", data.attributes.media_title);
@@ -211,6 +216,22 @@ class MediaDevice extends Homey.Device {
                         this.setCapabilityValue("onoff", false);
                 }
             }
+            if (this.getStoreValue("canSelectSource") == true){
+                if (data.attributes.source_list == null){
+                    this.setStoreValue("sourceList", '');
+                }
+                else{
+                    this.setStoreValue("sourceList", JSON.stringify(data.attributes.source_list));
+                }
+            }                
+            if (this.getStoreValue("canSelectSoundMode") == true){
+                if (data.attributes.sound_mode_list == null){
+                    this.setStoreValue("soundModeList", '');
+                }
+                else{
+                    this.setStoreValue("soundModeList", JSON.stringify(data.attributes.sound_mode_list));
+                }
+            }                
 
         }
     }
@@ -237,6 +258,7 @@ class MediaDevice extends Homey.Device {
     async onCapabilityVolumeSet( value, opts ) {
         let entityId = this.entityId;
         let outputValue = this.outputConverter("volume_set")(value);
+        outputValue = Math.round(outputValue*100)/100;
         await this._client.callService("media_player", "volume_set", {
             "entity_id": entityId,
             "volume_level": outputValue
@@ -331,7 +353,22 @@ class MediaDevice extends Homey.Device {
 
     getSourceList(){
         if (this.getStoreValue("canSelectSource") == true){
-            let list = JSON.parse(this.getStoreValue("sourceList"));
+            let string = this.getStoreValue("sourceList");
+            if (string == null){
+                return [];
+            }
+            let list = [];
+            try{
+                list = JSON.parse(string);
+            }
+            catch{
+                try{
+                    list = string.split(',');
+                }
+                catch{
+
+                }
+            }
             let result = [];
             for (let i=0; i<list.length; i++){
                 result.push({
@@ -361,7 +398,22 @@ class MediaDevice extends Homey.Device {
 
     getSoundModeList(){
         if (this.getStoreValue("canSelectSoundMode") == true){
-            let list = JSON.parse(this.getStoreValue("soundModeList"));
+            let string = this.getStoreValue("soundModeList");
+            if (string == null){
+                return [];
+            }
+            let list = [];
+            try{
+                list = JSON.parse(string);
+            }
+            catch{
+                try{
+                    list = string.split(',');
+                }
+                catch{
+
+                }
+            }
             let result = [];
             for (let i=0; i<list.length; i++){
                 result.push({
