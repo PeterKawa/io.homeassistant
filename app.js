@@ -29,12 +29,50 @@ class App extends Homey.App {
 		this._flowActionCallService = this.homey.flow.getActionCard('callService')
 		this._flowActionCallService.registerRunListener(async (args, state) => {
 			try{
-				this._onFlowActionCallService;
+				await this._onFlowActionCallService(args);
+				return true;
 			}
 			catch(error){
 				this.error("Error executing flowAction 'callService': "+  error.message);
-				throw error;
+				throw new Error(error.message);
 			}
+		});
+
+		this._flowActionMediaSelectSource = this.homey.flow.getActionCard('mediaSelectSource');
+		this._flowActionMediaSelectSource.registerRunListener(async (args, state) => {
+			try{
+				await args.device.setSource(args.source.id);
+				return true;
+			}
+			catch(error){
+				this.error("Error executing flowAction 'mediaSelectSource': "+  error.message);
+				throw new Error(error.message);
+			}
+		});
+		this._flowActionMediaSelectSource.registerArgumentAutocompleteListener('source', async (query, args) => {
+			const sourceList = args.device.getSourceList();
+			return sourceList.filter((result) => { 
+				return result.name.toLowerCase().includes(query.toLowerCase());
+			});
+			
+		});
+
+		this._flowActionMediaSelectSoundMode = this.homey.flow.getActionCard('mediaSelectSoundMode');
+		this._flowActionMediaSelectSoundMode.registerRunListener(async (args, state) => {
+			try{
+				await args.device.setSoundMode(args.mode.id);
+				return true;
+			}
+			catch(error){
+				this.error("Error executing flowAction 'mediaSelectSoundMode': "+  error.message);
+				throw new Error(error.message);
+			}
+		});
+		this._flowActionMediaSelectSoundMode.registerArgumentAutocompleteListener('mode', async (query, args) => {
+			const soundModeList = args.device.getSoundModeList();
+			return soundModeList.filter((result) => { 
+				return result.name.toLowerCase().includes(query.toLowerCase());
+			});
 		});
 
 		// App events
@@ -64,8 +102,8 @@ class App extends Homey.App {
 		}
 	}
 
-	_onFlowActionCallService(args) {
-		this._client.callService(args.domain, args.service, args.data);
+	async _onFlowActionCallService(args) {
+		await this._client.callService(args.domain, args.service, args.data);
 	}
 
 	async clientReconnect(){
