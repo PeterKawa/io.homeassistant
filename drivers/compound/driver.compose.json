@@ -47,8 +47,6 @@
     "meter_power",
     "meter_rain",
     
-    "volume_set",
-    
     "button.reconnect"
   ],
   "energy": {

@@ -15,58 +15,82 @@ const defaultBooleanConverter = {
 class MediaDevice extends Homey.Device {
 
     async onInit() {
-        this._client = this.homey.app.getClient();
-
         await this.updateCapabilities();
+
+        this._client = this.homey.app.getClient();
 
         this.entityId = this.getData().id;
         this.capabilities = this.getCapabilities();
 
-        this.log('device init');
-        this.log('id:', this.entityId);
-        this.log('name:', this.getName());
-        this.log('class:', this.getClass());
+        this.log('Device init. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
 
         this._client.registerDevice(this.entityId, this);
+
+        let entity = this._client.getEntity(this.entityId);
+        if(entity) { 
+            await this.onEntityUpdate(entity);
+        }
 
         // if(this.hasCapability("button")) {
         //     this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton(value, opts)});
         // }
 
         if(this.hasCapability("onoff")) {
-            this.registerCapabilityListener('onoff', async (value, opts) => {await this.onCapabilityOnoff(value, opts)});
+            this.registerCapabilityListener('onoff', async (value, opts) => {
+                await this.onCapabilityOnoff(value, opts)
+            });
         }
 
         if(this.hasCapability("volume_set")) {
-            this.registerCapabilityListener('volume_set', async (value, opts) => {await this.onCapabilityVolumeSet(value, opts)});
+            this.registerCapabilityListener('volume_set', async (value, opts) => {
+                await this.onCapabilityVolumeSet(value, opts)
+            });
         }
         if(this.hasCapability("volume_up")) {
-            this.registerCapabilityListener('volume_up', async (value, opts) => {await this.onCapabilityVolumeUp(value, opts)});
+            this.registerCapabilityListener('volume_up', async (value, opts) => {
+                await this.onCapabilityVolumeUp(value, opts)
+            });
         }
         if(this.hasCapability("volume_down")) {
-            this.registerCapabilityListener('volume_down', async (value, opts) => {await this.onCapabilityVolumeDown(value, opts)});
+            this.registerCapabilityListener('volume_down', async (value, opts) => {
+                await this.onCapabilityVolumeDown(value, opts)
+            });
         }
         if(this.hasCapability("volume_mute")) {
-            this.registerCapabilityListener('volume_mute', async (value, opts) => {await this.onCapabilityVolumeMute(value, opts)});
+            this.registerCapabilityListener('volume_mute', async (value, opts) => {
+                await this.onCapabilityVolumeMute(value, opts)
+            });
         }
         if(this.hasCapability("speaker_playing")) {
-            this.registerCapabilityListener('speaker_playing', async (value, opts) => {await this.onCapabilitySpeakerPlaying(value, opts)});
+            this.registerCapabilityListener('speaker_playing', async (value, opts) => {
+                await this.onCapabilitySpeakerPlaying(value, opts)
+            });
         }
         if(this.hasCapability("speaker_next")) {
-            this.registerCapabilityListener('speaker_next', async (value, opts) => {await this.onCapabilitySpeakerNext(value, opts)});
+            this.registerCapabilityListener('speaker_next', async (value, opts) => {
+                await this.onCapabilitySpeakerNext(value, opts)
+            });
         }
         if(this.hasCapability("speaker_prev")) {
-            this.registerCapabilityListener('speaker_prev', async (value, opts) => {await this.onCapabilitySpeakerPrev(value, opts)});
+            this.registerCapabilityListener('speaker_prev', async (value, opts) => {
+                await this.onCapabilitySpeakerPrev(value, opts)
+            });
         }
         if(this.hasCapability("speaker_shuffle")) {
-            this.registerCapabilityListener('speaker_shuffle', async (value, opts) => {await this.onCapabilitySpeakerShuffle(value, opts)});
+            this.registerCapabilityListener('speaker_shuffle', async (value, opts) => {
+                await this.onCapabilitySpeakerShuffle(value, opts)
+            });
         }
         if(this.hasCapability("speaker_repeat")) {
-            this.registerCapabilityListener('speaker_repeat', async (value, opts) => {await this.onCapabilitySpeakerRepeat(value, opts)});
+            this.registerCapabilityListener('speaker_repeat', async (value, opts) => {
+                await this.onCapabilitySpeakerRepeat(value, opts)
+            });
         }
 
         // maintenance actions
-        this.registerCapabilityListener('button.reconnect', async () => {await this.clientReconnect()});
+        this.registerCapabilityListener('button.reconnect', async () => {
+            await this.clientReconnect()
+        });
     }
 
     async updateCapabilities(){
@@ -128,15 +152,18 @@ class MediaDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onEntityUpdate(data) {
+    async onEntityUpdate(data) {
         let entityId = data.entity_id;
-        if(data) {
+        if(data == null) {
+            return;
+        }
 
+        try{
             let convert = null;
 
             if (this.hasCapability("volume_set") && data.attributes.volume_level != null){
                 convert = this.inputConverter("volume_set");
-                this.setCapabilityValue("volume_set", Math.round(convert(data.attributes.volume_level)*100)/100);
+                await this.setCapabilityValue("volume_set", Math.round(convert(data.attributes.volume_level)*100)/100);
             }
             if (this.hasCapability("volume_mute") && data.attributes.is_volume_muted != null){
                     this.setCapabilityValue("volume_mute", data.attributes.is_volume_muted);
@@ -144,38 +171,38 @@ class MediaDevice extends Homey.Device {
             if (this.hasCapability("speaker_playing") && data.state != null){
                 switch (data.state){
                     case "playing":
-                        this.setCapabilityValue("speaker_playing", true);
+                        await this.setCapabilityValue("speaker_playing", true);
                         break;
                     default:
-                        this.setCapabilityValue("speaker_playing", false);
+                        await this.setCapabilityValue("speaker_playing", false);
                 }
             }
             if (this.hasCapability("speaker_shuffle")){
                 if (data.attributes.shuffle != null){
-                    this.setCapabilityValue("speaker_shuffle", data.attributes.shuffle );
+                    await this.setCapabilityValue("speaker_shuffle", data.attributes.shuffle );
                 }
                 else{
-                    this.setCapabilityValue("speaker_shuffle", false );
+                    await this.setCapabilityValue("speaker_shuffle", false );
                 }
             }
             if (this.hasCapability("speaker_repeat")){
                 if (data.attributes.repeat != null){
                     switch (data.attributes.repeat){
                         case "off":
-                            this.setCapabilityValue("speaker_repeat", "none");
+                            await this.setCapabilityValue("speaker_repeat", "none");
                             break;
                         case "one":
-                            this.setCapabilityValue("speaker_repeat", "track");
+                            await this.setCapabilityValue("speaker_repeat", "track");
                             break;
                         case "all":
-                            this.setCapabilityValue("speaker_repeat", "playlist");
+                            await this.setCapabilityValue("speaker_repeat", "playlist");
                             break;
                         default:
-                            this.setCapabilityValue("speaker_repeat", "none");
+                            await this.setCapabilityValue("speaker_repeat", "none");
                     }
                 }
                 else{
-                    this.setCapabilityValue("speaker_repeat", "none");
+                    await this.setCapabilityValue("speaker_repeat", "none");
                 }
             }
             if (this.hasCapability("speaker_artist") && data.attributes.media_artist != null){
@@ -183,20 +210,20 @@ class MediaDevice extends Homey.Device {
             }
             if (this.hasCapability("speaker_album")){
                 if (data.attributes.media_album_name != null){
-                    this.setCapabilityValue("speaker_album", data.attributes.media_album_name);
+                    await this.setCapabilityValue("speaker_album", data.attributes.media_album_name);
                 }
                 else if (data.attributes.app_name != null){
-                    this.setCapabilityValue("speaker_album", data.attributes.app_name);
+                    await this.setCapabilityValue("speaker_album", data.attributes.app_name);
                 }
             }
             if (this.hasCapability("speaker_track") && data.attributes.media_title != null){
-                this.setCapabilityValue("speaker_track", data.attributes.media_title);
+                await this.setCapabilityValue("speaker_track", data.attributes.media_title);
             }
             if (this.hasCapability("speaker_duration") && data.attributes.media_duration != null){
-                this.setCapabilityValue("speaker_duration", data.attributes.media_duration);
+                await this.setCapabilityValue("speaker_duration", data.attributes.media_duration);
             }
             if (this.hasCapability("speaker_position") && data.attributes.media_position != null){
-                this.setCapabilityValue("speaker_position", data.attributes.media_position);
+                await this.setCapabilityValue("speaker_position", data.attributes.media_position);
             }
 
             if (this.hasCapability("onoff") && data.state != null){
@@ -206,33 +233,36 @@ class MediaDevice extends Homey.Device {
                     case "playing":
                     case "paused":
                     case "buffering":
-                            this.setCapabilityValue("onoff", true);
+                        await this.setCapabilityValue("onoff", true);
                         break;
                     case "off":
                     case "standby":
-                        this.setCapabilityValue("onoff", false);
+                        await this.setCapabilityValue("onoff", false);
                         break;
                     default:
-                        this.setCapabilityValue("onoff", false);
+                        await  this.setCapabilityValue("onoff", false);
                 }
             }
             if (this.getStoreValue("canSelectSource") == true){
                 if (data.attributes.source_list == null){
-                    this.setStoreValue("sourceList", '');
+                    await this.setStoreValue("sourceList", '');
                 }
                 else{
-                    this.setStoreValue("sourceList", JSON.stringify(data.attributes.source_list));
+                    await this.setStoreValue("sourceList", JSON.stringify(data.attributes.source_list));
                 }
             }                
             if (this.getStoreValue("canSelectSoundMode") == true){
                 if (data.attributes.sound_mode_list == null){
-                    this.setStoreValue("soundModeList", '');
+                    await this.setStoreValue("soundModeList", '');
                 }
                 else{
-                    this.setStoreValue("soundModeList", JSON.stringify(data.attributes.sound_mode_list));
+                    await this.setStoreValue("soundModeList", JSON.stringify(data.attributes.sound_mode_list));
                 }
             }                
 
+        }
+        catch(error){
+            throw new Error("Device update error: "+error.message);
         }
     }
     // onCapabilityButton( value, opts ) {

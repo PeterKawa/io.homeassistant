@@ -35,11 +35,24 @@
         "opts": {
           "duration": true
         }
+      },
+      "button.reconnect": {
+        "maintenanceAction": true,
+        "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+        },
+        "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+        }
       }
     },
     "images": {
       "large": "/drivers/light/assets/images/large.png",
       "small": "/drivers/light/assets/images/small.png"
   },
-  "$extends": [ "capabilitiesOptions", "pair", "repair" ]
+  "$extends": [ "pair", "repair" ]
   }

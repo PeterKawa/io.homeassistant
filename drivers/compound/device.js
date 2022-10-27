@@ -24,35 +24,43 @@ class CompoundDevice extends Homey.Device {
         this.compoundCapabilities = this.getData().capabilities;
         this.compoundCapabilitiesConverters = this.getData().capabilitiesConverters;
 
-        this.log('device init');
-        this.log('id:', this.entityId);
-        this.log('name:', this.getName());
-        this.log('class:', this.getClass());
+        this.log('Device init. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
 
         this._client.registerDevice(this.entityId, this);
 
+        let entity = this._client.getEntity(this.entityId);
+        if(entity) { 
+            this.onEntityUpdate(entity);
+        }
+
         if(this.hasCapability("button")) {
-            this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton(value, opts)});
+            this.registerCapabilityListener('button', async (value, opts) => {
+                await this.onCapabilityButton(value, opts)
+            });
         }
 
         if(this.hasCapability("onoff")) {
-            this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts)});
+            this.registerCapabilityListener('onoff', async (value, opts) => {
+                await this.onCapabilityOnoff(value, opts)
+            });
         }
 
         if(this.hasCapability("locked")) {
-            this.registerCapabilityListener('locked', async (value, opts) => {this.onCapabilityLocked(value, opts)});
+            this.registerCapabilityListener('locked', async (value, opts) => {
+                await this.onCapabilityLocked(value, opts)
+            });
         }
 
         if(this.hasCapability("dim")) {
-            this.registerCapabilityListener('dim', async (value, opts) => {this.onCapabilityDim(value, opts)});
-        }
-
-        if(this.hasCapability("volume_set")) {
-            this.registerCapabilityListener('volume_set', async (value, opts) => {this.onCapabilityVolumeSet(value, opts)});
+            this.registerCapabilityListener('dim', async (value, opts) => {
+                await this.onCapabilityDim(value, opts)
+            });
         }
 
         // maintenance actions
-        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+        this.registerCapabilityListener('button.reconnect', async () => {
+            await this.clientReconnect()
+        });
     }
 
     async updateCapabilities(){
@@ -106,6 +114,8 @@ class CompoundDevice extends Homey.Device {
 
     onAdded() {
         this.log('device added');
+        let entity = this._client.getEntity(this.entityId);
+        this.onEntityUpdate(entity);
     }
 
     onDeleted() {
@@ -113,59 +123,47 @@ class CompoundDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onEntityUpdate(data) {
-        let entityId = data.entity_id;
-
-        Object.keys(this.compoundCapabilities).forEach(key => {
-            if(this.compoundCapabilities[key] == entityId) {
-
-                // console.log("---------------------------------------------------------------");
-                // console.log("update compound device:", this.entityId);
-                // console.log("update compound capability:", key);
-                // console.log("update compound by entity:", entityId);
-
-                let convert = this.inputConverter(key);
-
-                this.setCapabilityValue(key, convert(data.attributes.volume_level));
-            }
-        });
+    async onEntityUpdate(data){
+        try {
+            let entityId = data.entity_id;
+            Object.keys(this.compoundCapabilities).forEach(key => {
+                if(this.compoundCapabilities[key] == entityId) {
+                    let convert = this.inputConverter(key);
+                    this.setCapabilityValue(key, convert(data.attributes.volume_level))
+                    .catch(error => {
+                        this.error("Capability update error "+error.message);
+                    });
+                }
+            });
+        }
+        catch(error) {
+            this.error("Device update error: "+ error.message);
+        }
     }
 
-    onCapabilityButton( value, opts ) {
-        this._client.turnOnOff(this.compoundCapabilities["button"], true);
+    async onCapabilityButton( value, opts ) {
+        await this._client.turnOnOff(this.compoundCapabilities["button"], true);
     }
 
 
-    onCapabilityOnoff( value, opts ) {
-        this._client.turnOnOff(this.compoundCapabilities["onoff"], value);
+    async onCapabilityOnoff( value, opts ) {
+        await this._client.turnOnOff(this.compoundCapabilities["onoff"], value);
     }
 
-    onCapabilityLocked( value, opts ) {
+    async onCapabilityLocked( value, opts ) {
         console.log("onCapabilityLocked", value);
-        this._client.turnOnOff(this.compoundCapabilities["locked"], value);
+        await this._client.turnOnOff(this.compoundCapabilities["locked"], value);
     }
 
-    onCapabilityDim( value, opts ) {
+    async onCapabilityDim( value, opts ) {
         let entityId = this.compoundCapabilities["dim"];
         let outputValue = this.outputConverter("dim")(value);
 
         // TODO: make service calls configurable to allow other types then just input_number
         
-        this._client.callService("input_number", "set_value", {
+        await this._client.callService("input_number", "set_value", {
             "entity_id": entityId,
             "value": outputValue
-        });
-    }
-
-    onCapabilityVolumeSet( value, opts ) {
-        let entityId = this.compoundCapabilities["volume_set"];
-        let outputValue = this.outputConverter("volume_set")(value);
-
-        // TODO: make service calls configurable to allow other types then just input_number
-        
-        this._client.callService("media_player", "volume_set", {
-            "entity_id": entityId,
-            "volume_level": outputValue
         });
     }
 

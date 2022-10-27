@@ -19,11 +19,17 @@ class App extends Homey.App {
 		let address = this.homey.settings.get("address");
 		let token = this.homey.settings.get("token");
 
-		this._client = new Client(address, token)
+		this._client = new Client(this);
 		this._client.on("connection_update", (state) => {
 				this.homey.api.realtime('connection_update', state);
 			});
-		await this._client.connect(address, token, false).catch((error) => {this.error("Connect error: "+ error);} );
+
+		try{
+			await this._client.connect(address, token, false);
+		}
+		catch(error){
+			this.error("Connect error: "+ error);
+		}
 
 		// Register Flowcards
 		this._flowActionCallService = this.homey.flow.getActionCard('callService')
@@ -103,6 +109,7 @@ class App extends Homey.App {
 	}
 
 	async _onFlowActionCallService(args) {
+		this.log("Call service. Domain: "+args.domain+" Service: "+args.service+" Data: "+args.data);
 		await this._client.callService(args.domain, args.service, args.data);
 	}
 

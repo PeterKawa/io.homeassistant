@@ -11,10 +11,7 @@ class ScriptDevice extends Homey.Device {
 
         this.entityId = this.getData().id;
 
-        this.log('device init');
-        this.log('id:', this.entityId);
-        this.log('name:', this.getName());
-        this.log('class:', this.getClass());
+        this.log('Device init. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
 
         this._client.registerDevice(this.entityId, this);
 
@@ -23,9 +20,13 @@ class ScriptDevice extends Homey.Device {
             this.onEntityUpdate(entity);
         }
 
-        this.registerCapabilityListener('button', async (value, opts) => {this.onCapabilityButton(value, opts);})
+        this.registerCapabilityListener('button', async (value, opts) => {
+            await this.onCapabilityButton(value, opts);
+        })
         // maintenance actions
-        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+        this.registerCapabilityListener('button.reconnect', async () => {
+            await this.clientReconnect()
+        });
     }
 
     async updateCapabilities(){
@@ -45,11 +46,11 @@ class ScriptDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onCapabilityButton( value, opts ) {
-        this._client.turnOnOff(this.entityId, true);
+    async onCapabilityButton( value, opts ) {
+        await this._client.turnOnOff(this.entityId, true);
     }
 
-    onEntityUpdate(data) {
+    async onEntityUpdate(data) {
         // nothing to update
     }
 

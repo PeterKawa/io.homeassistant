@@ -12,10 +12,7 @@ class SensorDevice extends Homey.Device {
         this.entityId = this.getData().id;
         this.capability = this.getCapabilities()[0];
 
-        this.log('device init');
-        this.log('id:', this.entityId);
-        this.log('name:', this.getName());
-        this.log('class:', this.getClass());
+        this.log('Device init. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
 
         this._client.registerDevice(this.entityId, this);
 
@@ -23,8 +20,11 @@ class SensorDevice extends Homey.Device {
         if(entity) { 
             this.onEntityUpdate(entity);
         }
+
         // maintenance actions
-        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+        this.registerCapabilityListener('button.reconnect', async () => {
+            await this.clientReconnect()
+        });
     }
 
     async updateCapabilities(){
@@ -37,6 +37,8 @@ class SensorDevice extends Homey.Device {
 
     onAdded() {
         this.log('device added');
+        let entity = this._client.getEntity(this.entityId);
+        this.onEntityUpdate(entity);
     }
 
     onDeleted() {
@@ -44,17 +46,17 @@ class SensorDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onEntityUpdate(data) {
+    async onEntityUpdate(data) {
         try {
             switch(this.capability) {
                 case "measure_generic":
-                    this.setCapabilityValue(this.capability, data.state);
+                    await this.setCapabilityValue(this.capability, data.state);
                     break;
                 default:
-                    this.setCapabilityValue(this.capability, parseFloat(data.state));
+                    await this.setCapabilityValue(this.capability, parseFloat(data.state));
             }
-
-        } catch(ex) {
+        }
+        catch(ex) {
             this.log("error", ex);
         }
     }

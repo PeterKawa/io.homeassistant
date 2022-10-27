@@ -11,10 +11,7 @@ class SwitchDevice extends Homey.Device {
 
         this.entityId = this.getData().id;
 
-        this.log('device init');
-        this.log('id:', this.entityId);
-        this.log('name:', this.getName());
-        this.log('class:', this.getClass());
+        this.log('Device init. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
 
         this._client.registerDevice(this.entityId, this);
 
@@ -23,9 +20,14 @@ class SwitchDevice extends Homey.Device {
             this.onEntityUpdate(entity);
         }
 
-        this.registerCapabilityListener('onoff', async (value, opts) => {this.onCapabilityOnoff(value, opts);})
+        this.registerCapabilityListener('onoff', async (value, opts) => {
+            await this.onCapabilityOnoff(value, opts);
+        });
+        
         // maintenance actions
-        this.registerCapabilityListener('button.reconnect', async () => {this.clientReconnect()});
+        this.registerCapabilityListener('button.reconnect', async () => {
+            await this.clientReconnect()
+        });
     }
 
     async updateCapabilities(){
@@ -38,6 +40,8 @@ class SwitchDevice extends Homey.Device {
 
     onAdded() {
         this.log('device added');
+        let entity = this._client.getEntity(this.entityId);
+        this.onEntityUpdate(entity);
     }
 
     onDeleted() {
@@ -45,13 +49,13 @@ class SwitchDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
-    onCapabilityOnoff( value, opts ) {
-        this._client.turnOnOff(this.entityId, value);
+    async onCapabilityOnoff( value, opts ) {
+        await this._client.turnOnOff(this.entityId, value);
     }
 
-    onEntityUpdate(data) {
+    async onEntityUpdate(data) {
         if(data) {
-            this.setCapabilityValue("onoff", data.state == "on");
+            await this.setCapabilityValue("onoff", data.state == "on");
         }
     }
 

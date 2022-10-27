@@ -425,7 +425,6 @@
         "meter_water",
         "meter_power",
         "meter_rain",
-        "volume_set",
         "button.reconnect"
       ],
       "energy": {
@@ -439,28 +438,6 @@
       }
     },
     {
-      "capabilitiesOptions": {
-        "dim": {
-          "opts": {
-            "duration": true
-          }
-        },
-        "light_hue": {
-          "opts": {
-            "duration": true
-          }
-        },
-        "light_saturation": {
-          "opts": {
-            "duration": true
-          }
-        },
-        "light_temperature": {
-          "opts": {
-            "duration": true
-          }
-        }
-      },
       "pair": [
         {
           "id": "loading",
@@ -549,6 +526,41 @@
         "light_temperature",
         "button.reconnect"
       ],
+      "capabilitiesOptions": {
+        "dim": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "light_hue": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "light_saturation": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "light_temperature": {
+          "opts": {
+            "duration": true
+          }
+        },
+        "button.reconnect": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Reconnect",
+            "de": "Neu verbinden",
+            "nl": "Opnieuw verbinden"
+          },
+          "desc": {
+            "en": "Reconnect and reload entities.",
+            "de": "Neu verbinden und Entitäten neu laden.",
+            "nl": "Maak opnieuw verbinding en laad entiteiten opnieuw."
+          }
+        }
+      },
       "images": {
         "large": "/drivers/light/assets/images/large.png",
         "small": "/drivers/light/assets/images/small.png"
