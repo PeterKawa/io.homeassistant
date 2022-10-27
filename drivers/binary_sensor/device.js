@@ -39,8 +39,6 @@ class BinarySensorDevice extends Homey.Device {
 
     onAdded() {
         this.log('device added');
-        let entity = this._client.getEntity(this.entityId);
-        this.onEntityUpdate(entity);
     }
 
     onDeleted() {

@@ -28,11 +28,6 @@ class CompoundDevice extends Homey.Device {
 
         this._client.registerDevice(this.entityId, this);
 
-        let entity = this._client.getEntity(this.entityId);
-        if(entity) { 
-            this.onEntityUpdate(entity);
-        }
-
         if(this.hasCapability("button")) {
             this.registerCapabilityListener('button', async (value, opts) => {
                 await this.onCapabilityButton(value, opts)
@@ -61,6 +56,9 @@ class CompoundDevice extends Homey.Device {
         this.registerCapabilityListener('button.reconnect', async () => {
             await this.clientReconnect()
         });
+
+        // Init device with a short timeout to wait for initial entities
+        this.timeoutInitDevice = setTimeout(async () => this.onInitDevice().catch(e => console.log(e)), 5 * 1000 );
     }
 
     async updateCapabilities(){
@@ -114,8 +112,6 @@ class CompoundDevice extends Homey.Device {
 
     onAdded() {
         this.log('device added');
-        let entity = this._client.getEntity(this.entityId);
-        this.onEntityUpdate(entity);
     }
 
     onDeleted() {
@@ -123,20 +119,40 @@ class CompoundDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
+    async onInitDevice(){
+        // Init device on satrtup with latest data to have initial values before HA sends updates
+        this.log('Device init data. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
+        
+        Object.keys(this.compoundCapabilities).forEach(key => {
+            let entity = this._client.getEntity(this.compoundCapabilities[key]);
+            if (entity){
+                this.onEntityUpdate(entity);
+            }
+        });
+
+    }
+
     async onEntityUpdate(data){
         try {
             let entityId = data.entity_id;
+            
             Object.keys(this.compoundCapabilities).forEach(key => {
                 if(this.compoundCapabilities[key] == entityId) {
+    
+                    // console.log("---------------------------------------------------------------");
+                    // console.log("update compound device:", this.entityId);
+                    // console.log("update compound capability:", key);
+                    // console.log("update compound by entity:", entityId);
+    
                     let convert = this.inputConverter(key);
                     let value = convert(data.state);
-                    this.log("Update compound device: "+this.entityId+" key: "+key+" value:"+value);
-                    this.setCapabilityValue(key, value)
-                    .catch(error => {
-                        this.error("Capability update error "+error.message);
-                    });
+
+                    this.log("Update compound device: "+this.entityId+" key: "+key+" entity: "+entityId+" value:"+value);
+    
+                    this.setCapabilityValue(key, value);
                 }
             });
+                
         }
         catch(error) {
             this.error("Device update error: "+ error.message);
