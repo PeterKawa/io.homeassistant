@@ -129,7 +129,9 @@ class CompoundDevice extends Homey.Device {
             Object.keys(this.compoundCapabilities).forEach(key => {
                 if(this.compoundCapabilities[key] == entityId) {
                     let convert = this.inputConverter(key);
-                    this.setCapabilityValue(key, convert(data.attributes.volume_level))
+                    let value = convert(data.state);
+                    this.log("Update compound device: "+this.entityId+" key: "+key+" value:"+value);
+                    this.setCapabilityValue(key, value)
                     .catch(error => {
                         this.error("Capability update error "+error.message);
                     });
