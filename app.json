@@ -1146,7 +1146,7 @@
       "getable": true,
       "setable": false,
       "insights": true,
-      "icon": "/assets/measure_generic.svg"
+      "icon": "/assets/capability_icons/measure_generic.svg"
     },
     "measure_numeric": {
       "type": "number",
@@ -1158,7 +1158,7 @@
       "getable": true,
       "setable": false,
       "insights": true,
-      "icon": "/assets/measure_numeric.svg"
+      "icon": "/assets/capability_icons/measure_numeric.svg"
     }
   }
 }

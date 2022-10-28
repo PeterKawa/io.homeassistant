@@ -9,6 +9,8 @@
   "capabilities": [
     "onoff",
     "locked",
+    "dim",
+
     "alarm_battery",
     "alarm_co",
     "alarm_co2",
