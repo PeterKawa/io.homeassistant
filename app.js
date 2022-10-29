@@ -31,7 +31,7 @@ class App extends Homey.App {
 			this.error("Connect error: "+ error);
 		}
 
-		// Register Flowcards
+		// Flow actions
 		this._flowActionCallService = this.homey.flow.getActionCard('callService')
 		this._flowActionCallService.registerRunListener(async (args, state) => {
 			try{
@@ -81,6 +81,16 @@ class App extends Homey.App {
 			});
 		});
 
+		// Flow contitions
+		this._flowConditionMeasureNumeric = this.homey.flow.getConditionCard('measure_numeric')
+		.registerRunListener(async (args, state) => {
+		  return (args.device.getCapabilityValue('measure_numeric') > args.value);
+		})
+		this._flowConditionMeasureNumeric = this.homey.flow.getConditionCard('measure_generic')
+		.registerRunListener(async (args, state) => {
+		  return (args.device.getCapabilityValue('measure_generic') == args.value);
+		})
+  
 		// App events
 		this.homey.settings.on("set", async (key) =>  {
 			if (key = "login" && this.homey.settings.get("login") == true){

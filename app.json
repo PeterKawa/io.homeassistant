@@ -56,6 +56,122 @@
     }
   },
   "flow": {
+    "triggers": [
+      {
+        "title": {
+          "en": "Value (text) changed",
+          "de": "Wert (Text) hat sich geändert",
+          "nl": "Waarde (tekst) gewijzigd"
+        },
+        "hint": {
+          "en": "Triggers when the text value changes.",
+          "de": "Wird ausgelöst, wenn sich der Textwert ändert.",
+          "nl": "Wordt geactiveerd wanneer de tekstwaarde verandert."
+        },
+        "tokens": [
+          {
+            "name": "measure_generic",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert",
+              "nl": "Waarde"
+            },
+            "example": "home"
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=sensor|compound"
+          }
+        ],
+        "id": "measure_generic_changed"
+      },
+      {
+        "title": {
+          "en": "Value (numeric) changed",
+          "de": "Wert (numerisch) hat sich geändert",
+          "nl": "Waarde (numeriek) gewijzigd"
+        },
+        "hint": {
+          "en": "Triggers when the numeric value changes.",
+          "de": "Wird ausgelöst, wenn sich der numerische Wert ändert.",
+          "nl": "Wordt geactiveerd wanneer de numerieke waarde verandert."
+        },
+        "tokens": [
+          {
+            "name": "measure_numeric",
+            "type": "number",
+            "title": {
+              "en": "Value",
+              "de": "Wert",
+              "nl": "Waarde"
+            },
+            "example": 10
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=sensor|compound"
+          }
+        ],
+        "id": "measure_numeric_changed"
+      }
+    ],
+    "conditions": [
+      {
+        "title": {
+          "en": "Value (text) !{{is|isn't}}",
+          "de": "Wert (Text) !{{ist|ist nicht}}",
+          "nl": "Waarde (tekst) !{{is|is niet}}"
+        },
+        "titleFormatted": {
+          "en": "Value (text) !{{is|isn't}} [[value]]",
+          "de": "Wert (Text) !{{ist|ist nicht}} [[value]]",
+          "nl": "Waarde (tekst) !{{is|is niet}} [[value]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=sensor|compound"
+          },
+          {
+            "name": "value",
+            "type": "text"
+          }
+        ],
+        "id": "measure_generic"
+      },
+      {
+        "title": {
+          "en": "Value (numeric) !{{is|isn't}} higher than",
+          "de": "Wert (numerisch) !{{ist|ist nicht}} größer als",
+          "nl": "Waarde (numeriek) !{{is|is niet}} hoger dan"
+        },
+        "titleFormatted": {
+          "en": "Value (numeric) !{{is|isn't}} higher than [[value]]",
+          "de": "Wert (numerisch) !{{ist|ist nicht}} größer als [[value]]",
+          "nl": "Waarde (numeriek) !{{is|is niet}} hoger dan [[value]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=sensor|compound"
+          },
+          {
+            "name": "value",
+            "type": "number"
+          }
+        ],
+        "id": "measure_numeric"
+      }
+    ],
     "actions": [
       {
         "id": "callService",
@@ -387,7 +503,9 @@
       "class": "sensor",
       "capabilities": [
         "onoff",
+        "button",
         "locked",
+        "dim",
         "alarm_battery",
         "alarm_co",
         "alarm_co2",
