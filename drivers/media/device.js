@@ -241,23 +241,22 @@ class MediaDevice extends Homey.Device {
                         await  this.setCapabilityValue("onoff", false);
                 }
             }
-            if (this.getStoreValue("canSelectSource") == true){
-                if (data.attributes.source_list == null){
-                    await this.setStoreValue("sourceList", '');
-                }
-                else{
-                    await this.setStoreValue("sourceList", JSON.stringify(data.attributes.source_list));
-                }
-            }                
-            if (this.getStoreValue("canSelectSoundMode") == true){
-                if (data.attributes.sound_mode_list == null){
-                    await this.setStoreValue("soundModeList", '');
-                }
-                else{
-                    await this.setStoreValue("soundModeList", JSON.stringify(data.attributes.sound_mode_list));
-                }
-            }                
-
+            if (data.attributes.source_list == null){
+                await this.setStoreValue("sourceList", '');
+                await this.setStoreValue("canSelectSource", false);
+            }
+            else{
+                await this.setStoreValue("sourceList", JSON.stringify(data.attributes.source_list));
+                await this.setStoreValue("canSelectSource", true);
+            }
+            if (data.attributes.sound_mode_list == null){
+                await this.setStoreValue("soundModeList", '');
+                await this.setStoreValue("canSelectSoundMode", false);
+            }
+            else{
+                await this.setStoreValue("soundModeList", JSON.stringify(data.attributes.sound_mode_list));
+                await this.setStoreValue("canSelectSoundMode", true);
+            }
         }
         catch(error){
             throw new Error("Device update error: "+error.message);
