@@ -45,18 +45,6 @@ class CompoundDevice extends Homey.Device {
             await this.clientReconnect()
         });
 
-        // Flow trigger for all capabilities
-        this.flowTriggerCapabilityChanged = this.homey.flow.getDeviceTriggerCard('capability_changed');
-        this.flowTriggerCapabilityChanged.registerRunListener(async (args, state) => {
-            return ( !args.capability || !args.capability.id || args.capability.id === state.capability.id);
-        });
-        this.flowTriggerCapabilityChanged.registerArgumentAutocompleteListener('capability', async (query, args) => {
-            const capabilityList = this.getAutocompleteCapabilityList();
-            return capabilityList.filter((result) => { 
-                return result.name.toLowerCase().includes(query.toLowerCase());
-            });
-        });
-            
         // Init device with a short timeout to wait for initial entities
         this.timeoutInitDevice = this.homey.setTimeout(async () => this.onInitDevice().catch(e => console.log(e)), 5 * 1000 );
     }
@@ -71,7 +59,10 @@ class CompoundDevice extends Homey.Device {
 
     getCapabilityType(capability){
         let type = typeof(this.getCapabilityValue(capability));
-        if (type == null || type == undefined){
+        if (type == 'string' || type == 'number' || type == 'boolean'){
+            return type;
+        }
+        else{
             if (capability.startsWith("measure_generic")){
                 return "string";
             }
@@ -84,7 +75,6 @@ class CompoundDevice extends Homey.Device {
                 return "boolean";
             }
         }
-        else return type;
     }
 
     getAutocompleteCapabilityList(){
@@ -211,7 +201,7 @@ class CompoundDevice extends Homey.Device {
                                     tokens.value_boolean = value;
                                     break;
                             }
-                            this.flowTriggerCapabilityChanged.trigger(this, tokens, state);
+                            this.homey.app._flowTriggerCapabilityChanged.trigger(this, tokens, state);
                         }
                     }
                     catch(error) {

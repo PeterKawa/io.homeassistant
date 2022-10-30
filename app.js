@@ -81,6 +81,18 @@ class App extends Homey.App {
 			});
 		});
 
+		// Flow trigger for all capabilities
+		this._flowTriggerCapabilityChanged = this.homey.flow.getDeviceTriggerCard('capability_changed');
+		this._flowTriggerCapabilityChanged.registerRunListener(async (args, state) => {
+			return ( !args.capability || !args.capability.id || args.capability.id === state.capability.id);
+		});
+		this._flowTriggerCapabilityChanged.registerArgumentAutocompleteListener('capability', async (query, args) => {
+			const capabilityList = args.device.getAutocompleteCapabilityList();
+			return capabilityList.filter((result) => { 
+				return result.name.toLowerCase().includes(query.toLowerCase());
+			});
+		});
+		
 		// Flow contitions
 		this._flowConditionMeasureNumeric = this.homey.flow.getConditionCard('measure_numeric')
 		.registerRunListener(async (args, state) => {
