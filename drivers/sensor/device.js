@@ -16,15 +16,13 @@ class SensorDevice extends Homey.Device {
 
         this._client.registerDevice(this.entityId, this);
 
-        let entity = this._client.getEntity(this.entityId);
-        if(entity) { 
-            this.onEntityUpdate(entity);
-        }
-
         // maintenance actions
         this.registerCapabilityListener('button.reconnect', async () => {
             await this.clientReconnect()
         });
+
+        // Init device with a short timeout to wait for initial entities
+        this.timeoutInitDevice = this.homey.setTimeout(async () => this.onInitDevice().catch(e => console.log(e)), 5 * 1000 );
     }
 
     async updateCapabilities(){
@@ -44,14 +42,40 @@ class SensorDevice extends Homey.Device {
         this._client.unregisterDevice(this.entityId);
     }
 
+    async onInitDevice(){
+        // Init device on satrtup with latest data to have initial values before HA sends updates
+        this.log('Device init data. ID: '+this.entityId+" Name: "+this.getName()+" Class: "+this.getClass());
+        let entity = this._client.getEntity(this.entityId);
+        if (entity){
+            this.onEntityUpdate(entity);
+        }
+    }
+
     async onEntityUpdate(data) {
         try {
-            switch(this.capability) {
-                case "measure_generic":
-                    await this.setCapabilityValue(this.capability, data.state);
-                    break;
-                default:
-                    await this.setCapabilityValue(this.capability, parseFloat(data.state));
+            // let value = this.getCapabilityValue(this.capability);
+            // switch (typeof(value)){
+            //     case "number":
+            //         await this.setCapabilityValue(this.capability, parseFloat(data.state));
+            //         break;
+            //     case "boolean":
+            //         await this.setCapabilityValue(this.capability, data.state == "on")
+            //         break;
+            //     case "string":
+            //         await this.setCapabilityValue(this.capability, data.state);
+            //         break;
+            // }
+            if (this.capability == "measure_generic"){
+                // String capabilities
+                await this.setCapabilityValue(this.capability, data.state);
+            }
+            else if (this.capability.startsWith("alarm")){
+                // boolean capability
+                await this.setCapabilityValue(this.capability, data.state == "on");
+            }
+            else{
+                // numeric capability
+                await this.setCapabilityValue(this.capability, parseFloat(data.state));
             }
         }
         catch(ex) {

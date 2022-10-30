@@ -35,42 +35,30 @@ class CompoundDevice extends Homey.Device {
 
         this._client.registerDevice(this.entityId, this);
 
+        // Capability listener for all existing capabilities
         this.registerMultipleCapabilityListener(this.getCapabilities(), async (value, opts) => {
             await this._onCapabilitiesSet(value, opts)
         }, CAPABILITIES_SET_DEBOUNCE);
-
-
-        // if(this.hasCapability("button")) {
-        //     this.registerCapabilityListener('button', async (value, opts) => {
-        //         await this.onCapabilityButton(value, opts)
-        //     });
-        // }
-
-        // if(this.hasCapability("onoff")) {
-        //     this.registerCapabilityListener('onoff', async (value, opts) => {
-        //         await this.onCapabilityOnoff(value, opts)
-        //     });
-        // }
-
-        // if(this.hasCapability("locked")) {
-        //     this.registerCapabilityListener('locked', async (value, opts) => {
-        //         await this.onCapabilityLocked(value, opts)
-        //     });
-        // }
-
-        // if(this.hasCapability("dim")) {
-        //     this.registerCapabilityListener('dim', async (value, opts) => {
-        //         await this.onCapabilityDim(value, opts)
-        //     });
-        // }
 
         // maintenance actions
         this.registerCapabilityListener('button.reconnect', async () => {
             await this.clientReconnect()
         });
 
+        // Flow trigger for all capabilities
+        this.flowTriggerCapabilityChanged = this.homey.flow.getDeviceTriggerCard('capability_changed');
+        this.flowTriggerCapabilityChanged.registerRunListener(async (args, state) => {
+            return ( !args.capability || !args.capability.id || args.capability.id === state.capability.id);
+        });
+        this.flowTriggerCapabilityChanged.registerArgumentAutocompleteListener('capability', async (query, args) => {
+            const capabilityList = this.getAutocompleteCapabilityList();
+            return capabilityList.filter((result) => { 
+                return result.name.toLowerCase().includes(query.toLowerCase());
+            });
+        });
+            
         // Init device with a short timeout to wait for initial entities
-        this.timeoutInitDevice = setTimeout(async () => this.onInitDevice().catch(e => console.log(e)), 5 * 1000 );
+        this.timeoutInitDevice = this.homey.setTimeout(async () => this.onInitDevice().catch(e => console.log(e)), 5 * 1000 );
     }
 
     async updateCapabilities(){
@@ -79,6 +67,39 @@ class CompoundDevice extends Homey.Device {
         {
           await this.addCapability('button.reconnect');
         }
+    }
+
+    getCapabilityType(capability){
+        let type = typeof(this.getCapabilityValue(capability));
+        if (type == null || type == undefined){
+            if (capability.startsWith("measure_generic")){
+                return "string";
+            }
+            else if( capability.startsWith("measure_") ||
+                capability.startsWith("meter_") ||
+                capability == "dim" ) {
+                return "number";
+            } 
+            else {
+                return "boolean";
+            }
+        }
+        else return type;
+    }
+
+    getAutocompleteCapabilityList(){
+        let capabilities = this.getCapabilities();
+        let result = [];
+        for (let i=0; i<capabilities.length; i++){
+            if (capabilities[i] != "button.reconnect"){
+                let name = capabilities[i] + " ("+this.compoundCapabilities[capabilities[i]]+")";
+                result.push({
+                    id: capabilities[i],
+                    name: name
+                })
+            }
+        }
+        return result;
     }
 
     inputConverter(capability) {
@@ -93,16 +114,13 @@ class CompoundDevice extends Homey.Device {
             }
         }
 
-        if (capability.startsWith("measure_generic")){
-            return defaultStringConverter.from;
-        }
-        else if( capability.startsWith("measure_") ||
-            capability.startsWith("meter_") ||
-            capability == "dim" ) {
-            return defaultValueConverter.from;
-        } 
-        else {
-            return defaultBooleanConverter.from;
+        switch (this.getCapabilityType(capability)){
+            case "string":
+                return defaultStringConverter.from;
+            case "number":
+                return defaultValueConverter.from;
+            case "boolean":
+                return defaultBooleanConverter.from;
         }
     }
 
@@ -117,16 +135,13 @@ class CompoundDevice extends Homey.Device {
             }
         }
 
-        if (capability.startsWith("measure_generic")){
-            return defaultStringConverter.to;
-        }
-        else if( capability.startsWith("measure_") ||
-            capability.startsWith("meter_") ||
-            capability == "dim" ) {
-            return defaultValueConverter.to;
-        } 
-        else{
-            return defaultBooleanConverter.to;
+        switch (this.getCapabilityType(capability)){
+            case "string":
+                return defaultStringConverter.to;
+            case "number":
+                return defaultValueConverter.to;
+            case "boolean":
+                return defaultBooleanConverter.to;
         }
     }
 
@@ -167,10 +182,37 @@ class CompoundDevice extends Homey.Device {
                     let convert = this.inputConverter(key);
                     let value = convert(data.state);
                     if (value == null || value == undefined)
-                    this.log("Update compound device. Value convert error: "+this.entityId+" key: "+key+" entity: "+entityId+" HA state: "+data.state+" converted:"+value);
+                        this.log("Update compound device. Value convert error: "+this.entityId+" key: "+key+" entity: "+entityId+" HA state: "+data.state+" converted:"+value);
     
                     try {
+                        let oldValue = this.getCapabilityValue(key);
                         await this.setCapabilityValue(key, value);
+                        if (oldValue!=value){
+                            // trigger flow
+                            let state = {
+                                capability: {
+                                    id: key
+                                }
+                            };
+                            let tokens = {
+                                capability: key,
+                                value_string: '',
+                                value_number: 0,
+                                value_boolean: false
+                            };
+                            switch (this.getCapabilityType(key)){
+                                case "string":
+                                    tokens.value_string = value;
+                                    break;
+                                case "number":
+                                    tokens.value_number = value;
+                                    break;
+                                case "boolean":
+                                    tokens.value_boolean = value;
+                                    break;
+                            }
+                            this.flowTriggerCapabilityChanged.trigger(this, tokens, state);
+                        }
                     }
                     catch(error) {
                         this.error("Update compound device error: "+this.entityId+" key: "+key+" entity: "+entityId+" value:"+value+" error: "+error.message);
@@ -192,7 +234,7 @@ class CompoundDevice extends Homey.Device {
                 if (key.startsWith("onoff")){
                     this.onCapabilityOnoff(key, valueObj[keys[i]]);
                 }
-                if (key.startsWith("button")){
+                if (key.startsWith("button") && key != "button.reconnect"){
                     this.onCapabilityButton(key);
                 }
                 if (key.startsWith("locked")){
